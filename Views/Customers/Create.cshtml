@@ -34,13 +34,51 @@
             </div>
             <div class="form-group">
                 <label asp-for="CustomerType" class="control-label"></label>
-                <input asp-for="CustomerType" class="form-control" />
+                <select asp-for="CustomerType" class="form-control" asp-items="ViewBag.CustomerTypes"></select>
                 <span asp-validation-for="CustomerType" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="UpdatedAt" class="control-label"></label>
                 <input asp-for="UpdatedAt" class="form-control" />
                 <span asp-validation-for="UpdatedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label for="dateOfBirth" class="control-label">Date of Birth</label>
+                <input type="date" name="dateOfBirth" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="occupation" class="control-label">Occupation</label>
+                <input name="occupation" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="abn" class="control-label">ABN</label>
+                <input name="abn" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="acn" class="control-label">ACN</label>
+                <input name="acn" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="industry" class="control-label">Industry</label>
+                <input name="industry" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="contactPersonName" class="control-label">Contact Person Name</label>
+                <input name="contactPersonName" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="contactPersonPhone" class="control-label">Contact Person Phone</label>
+                <input name="contactPersonPhone" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label for="contactPersonEmail" class="control-label">Contact Person Email</label>
+                <input name="contactPersonEmail" class="form-control" />
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -54,5 +92,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

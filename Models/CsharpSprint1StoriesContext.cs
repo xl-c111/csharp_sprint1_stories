@@ -84,6 +84,9 @@ public partial class CsharpSprint1StoriesContext : DbContext
         {
             entity.HasKey(e => e.CustomerId).HasName("PRIMARY");
 
+            entity.Property(e => e.CustomerId)
+        .ValueGeneratedNever();
+
             entity.HasIndex(e => e.Email, "UQ_Customers_Email").IsUnique();
 
             entity.Property(e => e.Address).HasMaxLength(255);

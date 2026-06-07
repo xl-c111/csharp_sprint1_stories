@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using csharp_sprint1_stories.Models;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace Controllers
 {
@@ -45,6 +46,12 @@ namespace Controllers
         // GET: Customers/Create
         public IActionResult Create()
         {
+            ViewData["CustomerTypes"] = new SelectList(new List<string>
+            {
+                "Person",
+                "Company"
+            });
+
             return View();
         }
 
@@ -53,15 +60,120 @@ namespace Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CustomerId,Name,Address,PhoneNumber,Email,CustomerType,CreatedAt,UpdatedAt,IsActive")] Customer customer)
+        public async Task<IActionResult> Create(
+            string name,
+            string address,
+            string phoneNumber,
+            string email,
+            string customerType,
+            DateTime? dateOfBirth,
+            string? occupation,
+            string? abn,
+            string? acn,
+            string? industry,
+            string? contactPersonName,
+            string? contactPersonPhone,
+            string? contactPersonEmail
+            )
         {
-            if (ModelState.IsValid)
+            // step 1: clean the customer type input.
+            customerType = customerType.Trim().ToLower();
+
+            // step 2: make sure the customer type is either person or company.
+            if (customerType != "person" && customerType != "company")
             {
-                _context.Add(customer);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("", "Customer type must be person or company.");
+                ViewData["CustomerTypes"] = new SelectList(new List<string> { "Person", "Company" });
+                return View();
             }
-            return View(customer);
+
+            // step 3: if the customer is a person, make sure date of birth is provided.
+            if (customerType == "person" && dateOfBirth == null)
+            {
+                ModelState.AddModelError("", "Date of birth is required for a person customer.");
+                return View();
+            }
+
+            // step 4: if the customer is a company, make sure all required company fields are provided.
+            if (customerType == "company")
+            {
+                if (string.IsNullOrWhiteSpace(abn) ||
+                    string.IsNullOrWhiteSpace(acn) ||
+                    string.IsNullOrWhiteSpace(contactPersonName) ||
+                    string.IsNullOrWhiteSpace(contactPersonPhone) ||
+                    string.IsNullOrWhiteSpace(contactPersonEmail))
+                {
+                    ModelState.AddModelError("", "ABN, ACN, and contact person details are required for a company customer.");
+                    return View();
+                }
+            }
+
+            // step 5: generate the next customer id.
+
+            long nextCustomerId;
+
+            // The first customer starts at 2000000, then each new customer increases by 7.
+            if (await _context.Customers.AnyAsync())
+            {
+                nextCustomerId = await _context.Customers.MaxAsync(c => c.CustomerId) + 7;
+            }
+            else
+            {
+                nextCustomerId = 2000000;
+            }
+
+            // step 6: create the main customer record.
+            var customer = new Customer
+            {
+                CustomerId = nextCustomerId,
+                Name = name,
+                Address = address,
+                PhoneNumber = phoneNumber,
+                Email = email,
+                CustomerType = customerType == "person" ? "Person" : "Company",
+                CreatedAt = DateTime.Now,
+                IsActive = true
+            };
+
+            // step 7: add the customer to the database context.
+            _context.Customers.Add(customer);
+
+            // step 8: save the customer first so the related person or company record can use the same CustomerId as a foreign key.
+            await _context.SaveChangesAsync();
+
+            // step 9: create the matching child record based on the customer type.
+            if (customerType == "person")
+            {
+                var person = new Person
+                {
+                    CustomerId = customer.CustomerId,
+                    DateOfBirth = dateOfBirth.Value,
+                    Occupation = occupation
+                };
+
+                _context.Persons.Add(person);
+            }
+            else
+            {
+                var company = new Company
+                {
+                    CustomerId = customer.CustomerId,
+                    Abn = abn!,
+                    Acn = acn!,
+                    Industry = industry,
+                    ContactPersonName = contactPersonName!,
+                    ContactPersonPhone = contactPersonPhone!,
+                    ContactPersonEmail = contactPersonEmail!
+                };
+
+                _context.Companies.Add(company);
+            }
+
+            // step 10: save the person or company record to the database.
+            await _context.SaveChangesAsync();
+
+            // step 11: redirect back to the customer list after successful creation.
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Customers/Edit/5
@@ -85,34 +197,61 @@ namespace Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long id, [Bind("CustomerId,Name,Address,PhoneNumber,Email,CustomerType,CreatedAt,UpdatedAt,IsActive")] Customer customer)
+        public async Task<IActionResult> Edit(long id, [Bind("CustomerId,Name,Address,PhoneNumber,Email,CustomerType,IsActive")] Customer formCustomer)
         {
-            if (id != customer.CustomerId)
+            // step 1: make sure the route id matches the customer id submitted from the form.
+            if (id != formCustomer.CustomerId)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            // step 2: find the existing customer record in the database.
+            // We update this tracked entity instead of replacing it directly.
+            var customer = await _context.Customers.FindAsync(id);
+
+            if (customer == null)
             {
-                try
-                {
-                    _context.Update(customer);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CustomerExists(customer.CustomerId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
-            return View(customer);
+
+            // step 3: check whether the submitted form data is valid.
+            if (!ModelState.IsValid)
+            {
+                return View(formCustomer);
+            }
+
+            // step 4: update only the fields that are allowed to change
+            // in the main Customers table.
+            customer.Name = formCustomer.Name;
+            customer.Address = formCustomer.Address;
+            customer.PhoneNumber = formCustomer.PhoneNumber;
+            customer.Email = formCustomer.Email;
+            customer.IsActive = formCustomer.IsActive;
+
+            // step 5: refresh the last updated timestamp.
+            customer.UpdatedAt = DateTime.Now;
+
+            try
+            {
+                // step 6: save the edited customer back to the database.
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // step 7: if the customer no longer exists, return NotFound.
+                // Otherwise, rethrow the exception.
+                if (!CustomerExists(formCustomer.CustomerId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            // step 8: if everything succeeds, return to the customer list page.
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Customers/Delete/5
