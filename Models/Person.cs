@@ -12,4 +12,28 @@ public partial class Person
     public string? Occupation { get; set; }
 
     public virtual Customer Customer { get; set; } = null!;
+
+    /// <summary>
+    /// Charges the same amount from every account owned by this person.
+    /// </summary>
+    /// <param name="amount">The amount to charge from each account.</param>
+    public void ChargeAllAccounts(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new ArgumentException("Amount should be greater than 0.");
+        }
+
+        foreach (Account account in Customer.Accounts)
+        {
+            if (account.SavingsAccount != null)
+            {
+                account.SavingsAccount.Withdraw(amount);
+            }
+            else
+            {
+                account.Withdraw(amount);
+            }
+        }
+    }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
 namespace csharp_sprint1_stories.Models;
 
 public partial class Account
@@ -24,4 +23,60 @@ public partial class Account
     public virtual Customer Customer { get; set; } = null!;
 
     public virtual SavingsAccount? SavingsAccount { get; set; }
+
+    /// <summary>
+    /// Withdraws money from the account. Base account withdrawals can overdraw the balance.
+    /// </summary>
+    /// <param name="amount">The amount to withdraw.</param>
+    /// <returns>The amount withdrawn.</returns>
+    /// <exception cref="ArgumentException">Thrown when the amount is less than or equal to zero.</exception>
+    public virtual decimal Withdraw(decimal amount)
+    {
+        ValidateAmount(amount);
+
+        Balance -= amount;
+        UpdatedAt = DateTime.Now;
+
+        return amount;
+    }
+
+    public void Deposit(decimal amount)
+    {
+        ValidateAmount(amount);
+
+        Balance += amount;
+        UpdatedAt = DateTime.Now;
+    }
+
+    /// <summary>
+    /// Replaces the account balance with a specific value.
+    /// </summary>
+    /// <param name="amount">The new balance value.</param>
+    public void CorrectBalance(decimal amount)
+    {
+        Balance = amount;
+        UpdatedAt = DateTime.Now;
+    }
+
+    /// <summary>
+    /// Marks the account as inactive.
+    /// </summary>
+    public void Deactivate()
+    {
+        IsActive = false;
+        UpdatedAt = DateTime.Now;
+    }
+
+    /// <summary>
+    /// Validates that an amount is greater than zero.
+    /// </summary>
+    /// <param name="amount">The amount to validate.</param>
+    /// <exception cref="ArgumentException">Thrown when the amount is less than or equal to zero.</exception>
+    protected void ValidateAmount(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new ArgumentException("Amount should be greater than 0.");
+        }
+    }
 }

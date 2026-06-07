@@ -12,4 +12,19 @@ public partial class CheckingAccount
     public decimal OverdraftLimit { get; set; }
 
     public virtual Account Account { get; set; } = null!;
+
+    public int GetNextCheckNumber()
+    {
+        if (NextCheckNumber < 1)
+        {
+            NextCheckNumber = 1;
+        }
+
+        int currentCheckNumber = NextCheckNumber;
+        NextCheckNumber++;
+        Account.UpdatedAt = DateTime.Now;
+
+        return currentCheckNumber;
+    }
+
 }
