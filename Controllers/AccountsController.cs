@@ -462,34 +462,5 @@ namespace Controllers
             }
         }
 
-        // POST: Accounts/AddInterest/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddInterest(long? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var account = await _context.Accounts
-                .Include(a => a.SavingsAccount)
-                .FirstOrDefaultAsync(a => a.AccountId == id);
-
-            if (account == null)
-            {
-                return NotFound();
-            }
-
-            if (account.SavingsAccount == null)
-            {
-                return NotFound();
-            }
-
-            account.SavingsAccount.AddInterest();
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Details), new { id = account.AccountId });
-        }
     }
 }

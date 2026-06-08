@@ -64,12 +64,4 @@
         Correct Balance
     </a>
 
-    @if (Model.AccountType == "Savings")
-    {
-        <form asp-action="AddInterest" method="post" class="d-inline">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="id" value="@Model.AccountId" />
-            <button type="submit" class="btn btn-success ms-2">Add Interest</button>
-        </form>
-    }
 </div>
