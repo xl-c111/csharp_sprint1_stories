@@ -291,5 +291,63 @@ namespace Controllers
         {
             return _context.Customers.Any(e => e.CustomerId == id);
         }
+
+
+        // GET: Customers/ChargeAllAccounts/5
+        public async Task<IActionResult> ChargeAllAccounts(long? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var customer = await _context.Customers
+                .Include(c => c.Person)
+                .Include(c => c.Company)
+                .Include(c => c.Accounts)
+                .ThenInclude(a => a.SavingsAccount)
+                .Include(c => c.Accounts)
+                .ThenInclude(a => a.CheckingAccount)
+                .FirstOrDefaultAsync(c => c.CustomerId == id);
+
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            return View(customer);
+        }
+
+        // POST: Customers/ChargeAllAccounts/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChargeAllAccounts(long id, decimal amount)
+        {
+            var customer = await _context.Customers
+                .Include(c => c.Person)
+                .Include(c => c.Company)
+                .Include(c => c.Accounts)
+                .ThenInclude(a => a.SavingsAccount)
+                .Include(c => c.Accounts)
+                .ThenInclude(a => a.CheckingAccount)
+                .FirstOrDefaultAsync(c => c.CustomerId == id);
+
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            if (customer.Person != null)
+            {
+                customer.Person.ChargeAllAccounts(amount);
+            }
+            else if (customer.Company != null)
+            {
+                customer.Company.ChargeAllAccounts(amount);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id = customer.CustomerId });
+        }
     }
 }

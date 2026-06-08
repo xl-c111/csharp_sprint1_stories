@@ -1,0 +1,33 @@
+@model csharp_sprint1_stories.Models.Customer
+
+@{
+    ViewData["Title"] = "Charge All Accounts";
+}
+
+<h1>Charge All Accounts</h1>
+
+<h4>Customer</h4>
+<hr />
+
+<div>
+    <p><strong>Customer ID:</strong> @Model.CustomerId</p>
+    <p><strong>Name:</strong> @Model.Name</p>
+    <p><strong>Customer Type:</strong> @Model.CustomerType</p>
+    <p><strong>Number of Accounts:</strong> @Model.Accounts.Count</p>
+</div>
+
+<form asp-action="ChargeAllAccounts" method="post">
+    <input type="hidden" name="id" value="@Model.CustomerId" />
+
+    <div class="form-group">
+        <label for="amount" class="control-label">Charge Amount</label>
+        <input type="number" step="0.01" name="amount" class="form-control" />
+    </div>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="form-group mt-3">
+        <input type="submit" value="Charge All Accounts" class="btn btn-primary" />
+        <a asp-action="Details" asp-route-id="@Model.CustomerId" class="btn btn-secondary">Back to Details</a>
+    </div>
+</form>

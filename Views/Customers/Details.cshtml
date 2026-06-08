@@ -63,4 +63,8 @@
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.CustomerId">Edit</a> |
     <a asp-action="Index">Back to List</a>
+
+    <a asp-action="ChargeAllAccounts" asp-route-id="@Model.CustomerId" class="btn btn-primary ms-2">
+        Charge All Accounts
+    </a>
 </div>
