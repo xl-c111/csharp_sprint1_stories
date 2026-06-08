@@ -285,20 +285,26 @@ namespace Controllers
         // GET: Accounts/Deposit/5
         public async Task<IActionResult> Deposit(long? id)
         {
+            // step 1: check whether an account ID was given.
             if (id == null)
             {
                 return NotFound();
             }
 
+            // step 2: search Account table for that account
             var account = await _context.Accounts
+                // step 3: also load its related Customer information.
                 .Include(a => a.Customer)
+                // find the first matching account, if not found, return null.
                 .FirstOrDefaultAsync(a => a.AccountId == id);
 
+            // step 5: if the account does not exist, return 404.
             if (account == null)
             {
                 return NotFound();
             }
 
+            // step 6: if the account exist, send it to the Deposit view.
             return View(account);
         }
 
@@ -318,7 +324,73 @@ namespace Controllers
 
             try
             {
+                // deposit the money, save the new balance to the database. 
                 account.Deposit(amount);
+                await _context.SaveChangesAsync();
+
+                // redirect user to the details page for this account.
+                return RedirectToAction(nameof(Details), new { id = account.AccountId });
+            }
+            catch (ArgumentException ex)
+            {
+                // add an error message to the page.
+                ModelState.AddModelError("", ex.Message);
+                return View(account);
+            }
+        }
+
+        // GET: Accounts/Withdraw/5
+        public async Task<IActionResult> Withdraw(long? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var account = await _context.Accounts
+                .Include(a => a.Customer)
+                .Include(a => a.SavingsAccount)
+                .Include(a => a.CheckingAccount)
+                .FirstOrDefaultAsync(a => a.AccountId == id);
+
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            return View(account);
+        }
+
+        // POST: Accounts/Withdraw/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Withdraw(long id, decimal amount)
+        {
+            // withdraw needs different rules depending on account type.
+            var account = await _context.Accounts
+                .Include(a => a.Customer)
+                .Include(a => a.SavingsAccount)
+                .Include(a => a.CheckingAccount)
+                .FirstOrDefaultAsync(a => a.AccountId == id);
+
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // apply savings account withdrawal rules.
+                if (account.SavingsAccount != null)
+                {
+                    account.SavingsAccount.Withdraw(amount);
+                }
+                else
+                {
+                    // apply checking account withdrawal rules.
+                    account.Withdraw(amount);
+                }
+
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Details), new { id = account.AccountId });
@@ -328,6 +400,96 @@ namespace Controllers
                 ModelState.AddModelError("", ex.Message);
                 return View(account);
             }
+        }
+
+        // GET: Accounts/CorrectBalance/5
+        public async Task<IActionResult> CorrectBalance(long? id)
+        {
+            // step 1: make sure an account id was provided.
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            // step 2: load the account and its related customer information.
+            var account = await _context.Accounts
+                .Include(a => a.Customer)
+                .FirstOrDefaultAsync(a => a.AccountId == id);
+
+            // step 3: if the account does not exist, return 404.
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            // step 4: if the account exists, send it to the CorrectBalance view.
+            return View(account);
+        }
+
+        // POST: Accounts/CorrectBalance/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CorrectBalance(long id, decimal amount)
+        {
+            // step 1: load the account that will be corrected.
+            var account = await _context.Accounts
+                .Include(a => a.Customer)
+                .FirstOrDefaultAsync(a => a.AccountId == id);
+
+            // step 2: if the account does not exist, return 404.
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // step 3: apply the balance correction rule from the model.
+                account.CorrectBalance(amount);
+
+                // step 4: save the corrected balance to the database.
+                await _context.SaveChangesAsync();
+
+                // step 5: redirect back to the account details page after success.
+                return RedirectToAction(nameof(Details), new { id = account.AccountId });
+            }
+            catch (ArgumentException ex)
+            {
+                // step 6: if the correction amount breaks a business rule,
+                // show the error message on the same page.
+                ModelState.AddModelError("", ex.Message);
+                return View(account);
+            }
+        }
+
+        // POST: Accounts/AddInterest/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddInterest(long? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var account = await _context.Accounts
+                .Include(a => a.SavingsAccount)
+                .FirstOrDefaultAsync(a => a.AccountId == id);
+
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            if (account.SavingsAccount == null)
+            {
+                return NotFound();
+            }
+
+            account.SavingsAccount.AddInterest();
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = account.AccountId });
         }
     }
 }

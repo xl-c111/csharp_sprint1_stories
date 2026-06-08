@@ -54,6 +54,11 @@ public partial class Account
     /// <param name="amount">The new balance value.</param>
     public void CorrectBalance(decimal amount)
     {
+        if (AccountType == "Savings" && amount < 0)
+        {
+            throw new ArgumentException("Savings accounts cannot have a negative balance.");
+        }
+
         Balance = amount;
         UpdatedAt = DateTime.Now;
     }

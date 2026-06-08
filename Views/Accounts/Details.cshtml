@@ -55,4 +55,21 @@
     <a asp-action="Deposit" asp-route-id="@Model.AccountId" class="btn btn-primary ms-2">
         Deposit
     </a>
+
+    <a asp-action="Withdraw" asp-route-id="@Model.AccountId" class="btn btn-warning ms-2">
+        Withdraw
+    </a>
+
+    <a asp-action="CorrectBalance" asp-route-id="@Model.AccountId" class="btn btn-secondary ms-2">
+        Correct Balance
+    </a>
+
+    @if (Model.AccountType == "Savings")
+    {
+        <form asp-action="AddInterest" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.AccountId" />
+            <button type="submit" class="btn btn-success ms-2">Add Interest</button>
+        </form>
+    }
 </div>
