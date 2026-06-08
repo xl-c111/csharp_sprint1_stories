@@ -139,6 +139,80 @@ dotnet run
 
 Then open the local URL shown in the terminal.
 
+## Testing
+
+This project includes an NUnit test project:
+
+- `csharp_sprint1_stories.Tests`
+
+### Test Stack
+
+- NUnit
+- NUnit3TestAdapter
+- Microsoft.EntityFrameworkCore.InMemory
+
+### Current Test Coverage
+
+#### Model tests
+
+- `Customer`
+  - add/remove account behavior
+  - null handling
+  - duplicate add behavior
+- `Person`
+  - charge all accounts
+  - invalid amount handling
+  - savings insufficient-funds edge case
+- `Company`
+  - checking vs savings charging rules
+  - invalid amount handling
+  - overdraft and insufficient-funds edge cases
+- `Account`
+  - deposit
+  - withdraw
+  - correct balance
+  - deactivate
+- `SavingsAccount`
+  - withdraw restrictions
+  - add interest
+- `CheckingAccount`
+  - next check number behavior
+
+#### Controller tests
+
+- `AccountsController`
+  - create
+  - edit
+  - deposit
+  - withdraw
+  - correct balance
+- `CustomersController`
+  - create
+  - edit
+  - charge all accounts
+- `SavingsAccountsController`
+  - edit
+  - add interest
+- `CheckingAccountsController`
+  - edit
+  - get next check number
+- `PersonsController`
+  - create
+  - edit
+  - delete
+- `CompaniesController`
+  - create
+  - edit
+  - delete
+
+### Run Tests
+
+From the project root:
+
+```bash
+dotnet test
+```
+
 ## Notes
 
 - This project uses scaffolded EF Core entities and MVC controllers as a base.
@@ -151,4 +225,3 @@ Then open the local URL shown in the terminal.
 - ID generation is controller-based rather than domain/service-based
 - Delete behavior is database-driven rather than wrapped in dedicated business methods
 - `MinimumBalance` is not yet enforced during savings withdrawals
-

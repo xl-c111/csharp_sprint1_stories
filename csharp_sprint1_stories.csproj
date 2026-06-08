@@ -21,4 +21,10 @@
     <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="csharp_sprint1_stories.Tests/**/*.cs" />
+    <EmbeddedResource Remove="csharp_sprint1_stories.Tests/**/*" />
+    <None Remove="csharp_sprint1_stories.Tests/**/*" />
+  </ItemGroup>
+
 </Project>

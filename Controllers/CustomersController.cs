@@ -337,17 +337,25 @@ namespace Controllers
                 return NotFound();
             }
 
-            if (customer.Person != null)
+            try
             {
-                customer.Person.ChargeAllAccounts(amount);
-            }
-            else if (customer.Company != null)
-            {
-                customer.Company.ChargeAllAccounts(amount);
-            }
+                if (customer.Person != null)
+                {
+                    customer.Person.ChargeAllAccounts(amount);
+                }
+                else if (customer.Company != null)
+                {
+                    customer.Company.ChargeAllAccounts(amount);
+                }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Details), new { id = customer.CustomerId });
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Details), new { id = customer.CustomerId });
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(customer);
+            }
         }
     }
 }
