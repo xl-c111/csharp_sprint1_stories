@@ -90,35 +90,56 @@ namespace Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long id, [Bind("AccountId,InterestRate,MinimumBalance")] SavingsAccount savingsAccount)
+        public async Task<IActionResult> Edit(long id, [Bind("AccountId,InterestRate,MinimumBalance")] SavingsAccount formSavingsAccount)
         {
-            if (id != savingsAccount.AccountId)
+            // step 1: make sure the route id matches the savings account id submitted from the form.
+            if (id != formSavingsAccount.AccountId)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            // step 2: find the existing savings account record in the database.
+            var savingsAccount = await _context.SavingsAccounts.FindAsync(id);
+
+            if (savingsAccount == null)
             {
-                try
-                {
-                    _context.Update(savingsAccount);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!SavingsAccountExists(savingsAccount.AccountId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
-            ViewData["AccountId"] = new SelectList(_context.Accounts, "AccountId", "AccountId", savingsAccount.AccountId);
-            return View(savingsAccount);
+
+            // step 3: remove validation for the navigation property that is not edited in this form.
+            ModelState.Remove("Account");
+
+            // step 4: check whether the submitted form data is valid.
+            if (!ModelState.IsValid)
+            {
+                ViewData["AccountId"] = new SelectList(_context.Accounts, "AccountId", "AccountId", formSavingsAccount.AccountId);
+                return View(formSavingsAccount);
+            }
+
+            // step 5: update only the editable savings account fields.
+            savingsAccount.InterestRate = formSavingsAccount.InterestRate;
+            savingsAccount.MinimumBalance = formSavingsAccount.MinimumBalance;
+
+            try
+            {
+                // step 6: save the changes to the database.
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // step 7: if the savings account no longer exists, return NotFound.
+                if (!SavingsAccountExists(formSavingsAccount.AccountId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            // step 8: if everything succeeds, return to the savings account list page.
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: SavingsAccounts/Delete/5
@@ -158,6 +179,31 @@ namespace Controllers
         private bool SavingsAccountExists(long id)
         {
             return _context.SavingsAccounts.Any(e => e.AccountId == id);
+        }
+
+        // POST: SavingsAccounts/AddInterest/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddInterest(long? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var savingsAccount = await _context.SavingsAccounts
+                .Include(s => s.Account)
+                .FirstOrDefaultAsync(s => s.AccountId == id);
+
+            if (savingsAccount == null)
+            {
+                return NotFound();
+            }
+
+            savingsAccount.AddInterest();
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = savingsAccount.AccountId });
         }
     }
 }
