@@ -182,6 +182,13 @@ namespace Controllers
         }
 
         // POST: SavingsAccounts/AddInterest/5
+        /// <summary>
+        /// Applies the configured interest rate to a savings account and saves the updated balance.
+        /// </summary>
+        /// <param name="id">The account id of the savings account.</param>
+        /// <returns>
+        /// Redirects back to the savings account details page after interest is applied.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddInterest(long? id)

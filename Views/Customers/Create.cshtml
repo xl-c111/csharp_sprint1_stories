@@ -22,58 +22,62 @@
                 <input asp-for="Address" class="form-control" />
                 <span asp-validation-for="Address" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group customer-contact-group">
                 <label asp-for="PhoneNumber" class="control-label"></label>
                 <input asp-for="PhoneNumber" class="form-control" />
                 <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                <small class="form-text text-muted">For company customers, leave this blank to reuse the contact person's phone number.</small>
             </div>
-            <div class="form-group">
+            <div class="form-group customer-contact-group">
                 <label asp-for="Email" class="control-label"></label>
                 <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
+                <small class="form-text text-muted">For company customers, leave this blank to reuse the contact person's email.</small>
             </div>
             <div class="form-group">
                 <label asp-for="CustomerType" class="control-label"></label>
                 <select asp-for="CustomerType" class="form-control" asp-items="ViewBag.CustomerTypes"></select>
                 <span asp-validation-for="CustomerType" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group person-only-field">
                 <label for="dateOfBirth" class="control-label">Date of Birth</label>
                 <input type="date" name="dateOfBirth" class="form-control" />
             </div>
 
-            <div class="form-group">
+            <div class="form-group person-only-field">
                 <label for="occupation" class="control-label">Occupation</label>
                 <input name="occupation" class="form-control" />
             </div>
-            <div class="form-group">
+            <div class="form-group company-only-field">
                 <label for="abn" class="control-label">ABN</label>
                 <input name="abn" class="form-control" />
             </div>
 
-            <div class="form-group">
+            <div class="form-group company-only-field">
                 <label for="acn" class="control-label">ACN</label>
                 <input name="acn" class="form-control" />
             </div>
 
-            <div class="form-group">
+            <div class="form-group company-only-field">
                 <label for="industry" class="control-label">Industry</label>
                 <input name="industry" class="form-control" />
             </div>
 
-            <div class="form-group">
+            <div class="form-group company-only-field">
                 <label for="contactPersonName" class="control-label">Contact Person Name</label>
                 <input name="contactPersonName" class="form-control" />
             </div>
 
-            <div class="form-group">
+            <div class="form-group company-only-field">
                 <label for="contactPersonPhone" class="control-label">Contact Person Phone</label>
                 <input name="contactPersonPhone" class="form-control" />
+                <small class="form-text text-muted">Required for company customers.</small>
             </div>
 
-            <div class="form-group">
+            <div class="form-group company-only-field">
                 <label for="contactPersonEmail" class="control-label">Contact Person Email</label>
                 <input name="contactPersonEmail" class="form-control" />
+                <small class="form-text text-muted">Required for company customers.</small>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -90,4 +94,35 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        (() => {
+            const customerTypeSelect = document.getElementById("CustomerType");
+            const customerContactGroups = document.querySelectorAll(".customer-contact-group");
+            const personFields = document.querySelectorAll(".person-only-field");
+            const companyFields = document.querySelectorAll(".company-only-field");
+
+            function toggleFields() {
+                const selectedType = customerTypeSelect?.value?.toLowerCase() ?? "";
+                const isCompany = selectedType === "company";
+
+                customerContactGroups.forEach(group => {
+                    group.style.display = isCompany ? "none" : "";
+                });
+
+                personFields.forEach(group => {
+                    group.style.display = isCompany ? "none" : "";
+                });
+
+                companyFields.forEach(group => {
+                    group.style.display = isCompany ? "" : "none";
+                });
+            }
+
+            if (customerTypeSelect) {
+                customerTypeSelect.addEventListener("change", toggleFields);
+                toggleFields();
+            }
+        })();
+    </script>
 }

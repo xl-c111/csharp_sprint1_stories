@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>csharp_sprint1_stories-9c83fd1d-35b4-4eeb-b6a4-5df25788a744</UserSecretsId>
+    <DefaultItemExcludes>$(DefaultItemExcludes);csharp_sprint1_stories.Tests/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +24,7 @@
 
   <ItemGroup>
     <Compile Remove="csharp_sprint1_stories.Tests/**/*.cs" />
+    <Content Remove="csharp_sprint1_stories.Tests/**/*" />
     <EmbeddedResource Remove="csharp_sprint1_stories.Tests/**/*" />
     <None Remove="csharp_sprint1_stories.Tests/**/*" />
   </ItemGroup>

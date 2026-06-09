@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace csharp_sprint1_stories.Models;
 
+/// <summary>
+/// Represents the shared customer record used by both person and company customers.
+/// </summary>
 public partial class Customer
 {
     public long CustomerId { get; set; }
@@ -11,9 +14,17 @@ public partial class Customer
 
     public string Address { get; set; } = null!;
 
-    public string PhoneNumber { get; set; } = null!;
+    /// <summary>
+    /// Stores the customer's primary phone number.
+    /// For company customers, this can be left empty and populated from the contact person's phone number.
+    /// </summary>
+    public string? PhoneNumber { get; set; }
 
-    public string Email { get; set; } = null!;
+    /// <summary>
+    /// Stores the customer's primary email address.
+    /// For company customers, this can be left empty and populated from the contact person's email.
+    /// </summary>
+    public string? Email { get; set; }
 
     public string CustomerType { get; set; } = null!;
 

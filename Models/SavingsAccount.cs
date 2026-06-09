@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace csharp_sprint1_stories.Models;
 
+/// <summary>
+/// Represents savings-account-specific data linked to a base account record.
+/// </summary>
 public partial class SavingsAccount
 {
     public long AccountId { get; set; }
@@ -42,6 +45,9 @@ public partial class SavingsAccount
     /// Adds interest to the account balance.
     /// Interest due = balance * interest rate / 100.
     /// </summary>
+    /// <remarks>
+    /// This operation updates the linked account balance directly.
+    /// </remarks>
     public void AddInterest()
     {
         decimal interest = Account.Balance * InterestRate / 100;

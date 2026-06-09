@@ -58,14 +58,34 @@ namespace Controllers
         // POST: Customers/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Creates a new person or company customer from the submitted form values.
+        /// Company customers can reuse the contact person's phone number and email as the shared customer contact details.
+        /// </summary>
+        /// <param name="name">The customer or company name.</param>
+        /// <param name="address">The primary address for the customer.</param>
+        /// <param name="phoneNumber">The shared customer phone number.</param>
+        /// <param name="email">The shared customer email address.</param>
+        /// <param name="customerType">The requested customer type: person or company.</param>
+        /// <param name="dateOfBirth">The date of birth for a person customer.</param>
+        /// <param name="occupation">The occupation for a person customer.</param>
+        /// <param name="abn">The ABN for a company customer.</param>
+        /// <param name="acn">The ACN for a company customer.</param>
+        /// <param name="industry">The industry for a company customer.</param>
+        /// <param name="contactPersonName">The contact person's name for a company customer.</param>
+        /// <param name="contactPersonPhone">The contact person's phone number for a company customer.</param>
+        /// <param name="contactPersonEmail">The contact person's email for a company customer.</param>
+        /// <returns>
+        /// Redirects to the customer list when creation succeeds, or returns the form view again when validation fails.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            string name,
-            string address,
-            string phoneNumber,
-            string email,
-            string customerType,
+            string? name,
+            string? address,
+            string? phoneNumber,
+            string? email,
+            string? customerType,
             DateTime? dateOfBirth,
             string? occupation,
             string? abn,
@@ -76,9 +96,20 @@ namespace Controllers
             string? contactPersonEmail
             )
         {
-            // step 1: clean the customer type input.
-            customerType = customerType.Trim().ToLower();
+            name = name?.Trim() ?? string.Empty;
+            address = address?.Trim() ?? string.Empty;
+            phoneNumber = phoneNumber?.Trim() ?? string.Empty;
+            email = email?.Trim() ?? string.Empty;
+            customerType = customerType?.Trim().ToLower() ?? string.Empty;
+            occupation = occupation?.Trim();
+            abn = abn?.Trim();
+            acn = acn?.Trim();
+            industry = industry?.Trim();
+            contactPersonName = contactPersonName?.Trim();
+            contactPersonPhone = contactPersonPhone?.Trim();
+            contactPersonEmail = contactPersonEmail?.Trim();
 
+            // step 1: clean the customer type input.
             // step 2: make sure the customer type is either person or company.
             if (customerType != "person" && customerType != "company")
             {
@@ -87,11 +118,20 @@ namespace Controllers
                 return View();
             }
 
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                ModelState.AddModelError("", "Name is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                ModelState.AddModelError("", "Address is required.");
+            }
+
             // step 3: if the customer is a person, make sure date of birth is provided.
             if (customerType == "person" && dateOfBirth == null)
             {
                 ModelState.AddModelError("", "Date of birth is required for a person customer.");
-                return View();
             }
 
             // step 4: if the customer is a company, make sure all required company fields are provided.
@@ -104,8 +144,18 @@ namespace Controllers
                     string.IsNullOrWhiteSpace(contactPersonEmail))
                 {
                     ModelState.AddModelError("", "ABN, ACN, and contact person details are required for a company customer.");
-                    return View();
                 }
+
+                // Company records should not force duplicate phone/email entry.
+                // Reuse the contact person's details for the shared customer record when left blank.
+                phoneNumber = string.IsNullOrWhiteSpace(phoneNumber) ? contactPersonPhone! : phoneNumber;
+                email = string.IsNullOrWhiteSpace(email) ? contactPersonEmail! : email;
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewData["CustomerTypes"] = new SelectList(new List<string> { "Person", "Company" }, customerType == "person" ? "Person" : "Company");
+                return View();
             }
 
             // step 5: generate the next customer id.
@@ -195,6 +245,14 @@ namespace Controllers
         // POST: Customers/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Updates the editable fields on an existing customer record.
+        /// </summary>
+        /// <param name="id">The customer id from the route.</param>
+        /// <param name="formCustomer">The submitted customer values from the edit form.</param>
+        /// <returns>
+        /// Redirects to the customer list when the update succeeds, or returns the edit view when validation fails.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(long id, [Bind("CustomerId,Name,Address,PhoneNumber,Email,CustomerType,IsActive")] Customer formCustomer)

@@ -62,6 +62,15 @@ namespace Controllers
         // POST: Accounts/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Creates a new checking or savings account for the selected customer.
+        /// </summary>
+        /// <param name="customerId">The customer who will own the new account.</param>
+        /// <param name="accountType">The requested account type: checking or savings.</param>
+        /// <param name="balance">The opening balance for the new account.</param>
+        /// <returns>
+        /// Redirects to the account list when creation succeeds, or returns the create view when validation fails.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         // step 1: user submits Create Account form. 
@@ -180,6 +189,14 @@ namespace Controllers
         // POST: Accounts/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Updates the editable fields on an existing account.
+        /// </summary>
+        /// <param name="id">The account id from the route.</param>
+        /// <param name="formAccount">The submitted account values from the edit form.</param>
+        /// <returns>
+        /// Redirects to the account list when the update succeeds, or returns the edit view when validation fails.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(long id, [Bind("AccountId,CustomerId,AccountType,Balance,CreatedAt,IsActive")] Account formAccount)

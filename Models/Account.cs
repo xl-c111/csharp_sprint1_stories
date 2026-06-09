@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 namespace csharp_sprint1_stories.Models;
 
+/// <summary>
+/// Represents a bank account owned by a customer.
+/// This base record stores shared account data for both checking and savings accounts.
+/// </summary>
 public partial class Account
 {
     public long AccountId { get; set; }
@@ -24,6 +28,11 @@ public partial class Account
 
     public virtual SavingsAccount? SavingsAccount { get; set; }
 
+    /// <summary>
+    /// Deposits money into the account.
+    /// </summary>
+    /// <param name="amount">The amount to deposit.</param>
+    /// <exception cref="ArgumentException">Thrown when the amount is less than or equal to zero.</exception>
     /// <summary>
     /// Withdraws money from the account. Base account withdrawals can overdraw the balance.
     /// </summary>
@@ -52,6 +61,7 @@ public partial class Account
     /// Replaces the account balance with a specific value.
     /// </summary>
     /// <param name="amount">The new balance value.</param>
+    /// <exception cref="ArgumentException">Thrown when a savings account is assigned a negative balance.</exception>
     public void CorrectBalance(decimal amount)
     {
         if (AccountType == "Savings" && amount < 0)

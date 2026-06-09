@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace csharp_sprint1_stories.Models;
 
+/// <summary>
+/// Represents company-specific customer data linked to a shared customer record.
+/// </summary>
 public partial class Company
 {
     public long CustomerId { get; set; }
@@ -27,6 +30,7 @@ public partial class Company
     /// Savings accounts are charged double the amount.
     /// </summary>
     /// <param name="amount">The base amount to charge.</param>
+    /// <exception cref="ArgumentException">Thrown when the amount is less than or equal to zero.</exception>
     public void ChargeAllAccounts(decimal amount)
     {
         if (amount <= 0)

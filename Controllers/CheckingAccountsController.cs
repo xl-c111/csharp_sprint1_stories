@@ -182,6 +182,13 @@ namespace Controllers
         }
 
         // POST: CheckingAccounts/GetNextCheckNumber/5
+        /// <summary>
+        /// Issues the next check number for a checking account and saves the incremented sequence.
+        /// </summary>
+        /// <param name="id">The account id of the checking account.</param>
+        /// <returns>
+        /// Redirects back to the checking account details page after issuing a check number.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetNextCheckNumber(long? id)

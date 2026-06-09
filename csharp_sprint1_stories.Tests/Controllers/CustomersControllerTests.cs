@@ -90,6 +90,32 @@ public class CustomersControllerTests
     }
 
     [Test]
+    public async Task Create_CompanyWithoutCustomerPhoneOrEmail_UsesContactDetails()
+    {
+        var result = await _controller.Create(
+            name: "Acme Pty Ltd",
+            address: "2 Main St",
+            phoneNumber: "",
+            email: "",
+            customerType: "Company",
+            dateOfBirth: null,
+            occupation: null,
+            abn: "12345678901",
+            acn: "123456789",
+            industry: "Technology",
+            contactPersonName: "Bob",
+            contactPersonPhone: "0422222222",
+            contactPersonEmail: "bob@example.com"
+        );
+
+        Assert.That(result, Is.TypeOf<RedirectToActionResult>());
+
+        var customer = _context.Customers.Single();
+        Assert.That(customer.PhoneNumber, Is.EqualTo("0422222222"));
+        Assert.That(customer.Email, Is.EqualTo("bob@example.com"));
+    }
+
+    [Test]
     public async Task Create_WithInvalidCustomerType_ReturnsViewAndDoesNotCreateCustomer()
     {
         var result = await _controller.Create(
@@ -438,7 +464,7 @@ public class CustomersControllerTests
     }
 
     [Test]
-    public void ChargeAllAccounts_WithZeroAmount_ThrowsArgumentException()
+    public async Task ChargeAllAccounts_WithZeroAmount_ReturnsViewWithModelError()
     {
         var customer = new Customer
         {
@@ -464,12 +490,14 @@ public class CustomersControllerTests
         _context.Persons.Add(person);
         _context.SaveChanges();
 
-        Assert.ThrowsAsync<ArgumentException>(async () =>
-            await _controller.ChargeAllAccounts(customer.CustomerId, 0m));
+        var result = await _controller.ChargeAllAccounts(customer.CustomerId, 0m);
+
+        Assert.That(result, Is.TypeOf<ViewResult>());
+        Assert.That(_controller.ModelState.IsValid, Is.False);
     }
 
     [Test]
-    public void ChargeAllAccounts_WithNegativeAmount_ThrowsArgumentException()
+    public async Task ChargeAllAccounts_WithNegativeAmount_ReturnsViewWithModelError()
     {
         var customer = new Customer
         {
@@ -495,8 +523,10 @@ public class CustomersControllerTests
         _context.Persons.Add(person);
         _context.SaveChanges();
 
-        Assert.ThrowsAsync<ArgumentException>(async () =>
-            await _controller.ChargeAllAccounts(customer.CustomerId, -5m));
+        var result = await _controller.ChargeAllAccounts(customer.CustomerId, -5m);
+
+        Assert.That(result, Is.TypeOf<ViewResult>());
+        Assert.That(_controller.ModelState.IsValid, Is.False);
     }
 
     [Test]
