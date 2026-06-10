@@ -15,6 +15,7 @@ public class PersonsControllerTests
     private PersonsController _controller = null!;
     private Customer _customer = null!;
     private Person _person = null!;
+    private Account _account = null!;
 
     [SetUp]
     public void SetUp()
@@ -45,8 +46,20 @@ public class PersonsControllerTests
             Occupation = "Engineer"
         };
 
+        _account = new Account
+        {
+            AccountId = 1000,
+            CustomerId = _customer.CustomerId,
+            Customer = _customer,
+            AccountType = "Checking",
+            Balance = 100m,
+            CreatedAt = DateTime.Now,
+            IsActive = true
+        };
+
         _context.Customers.Add(_customer);
         _context.Persons.Add(_person);
+        _context.Accounts.Add(_account);
         _context.SaveChanges();
 
         _controller = new PersonsController(_context);
@@ -127,11 +140,13 @@ public class PersonsControllerTests
     }
 
     [Test]
-    public async Task DeleteConfirmed_WithExistingPerson_RemovesRecord()
+    public async Task DeleteConfirmed_WithExistingPerson_RemovesCustomerAndRelatedAccountRecords()
     {
         var result = await _controller.DeleteConfirmed(_person.CustomerId);
 
         Assert.That(result, Is.TypeOf<RedirectToActionResult>());
+        Assert.That(await _context.Customers.FindAsync(_person.CustomerId), Is.Null);
         Assert.That(await _context.Persons.FindAsync(_person.CustomerId), Is.Null);
+        Assert.That(await _context.Accounts.FindAsync(_account.AccountId), Is.Null);
     }
 }

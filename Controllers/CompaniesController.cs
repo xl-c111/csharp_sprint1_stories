@@ -145,10 +145,10 @@ namespace Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(long id)
         {
-            var company = await _context.Companies.FindAsync(id);
-            if (company != null)
+            var customer = await _context.Customers.FindAsync(id);
+            if (customer != null)
             {
-                _context.Companies.Remove(company);
+                _context.Customers.Remove(customer);
             }
 
             await _context.SaveChangesAsync();

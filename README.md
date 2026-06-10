@@ -49,6 +49,7 @@ Program.cs       App startup and DI configuration
   - starts at `2000000`
   - increments by `7`
 - Edit core customer details
+- Delete a customer together with related subtype and account records
 - Charge all accounts for a customer
   - `Person`: charges the same amount to all accounts
   - `Company`: charges normal amount to checking accounts and double amount to savings accounts
@@ -111,6 +112,7 @@ Before running the application:
 
 1. Create the MySQL database using `sql/schema.sql`
 2. Set the connection string in `appsettings.json`
+3. Use your own local MySQL username and password
 
 Example:
 
@@ -127,6 +129,14 @@ Example:
 - .NET SDK compatible with `net10.0`
 - MySQL server
 
+### First-Time Setup
+
+1. Install a compatible .NET SDK
+2. Install and start MySQL locally
+3. Run [sql/schema.sql](sql/schema.sql) to create the database and tables
+4. Update `appsettings.json` with your own MySQL username and password
+5. Run the project from the repository root
+
 ### Steps
 
 1. Configure the database connection string in `appsettings.json`
@@ -138,6 +148,22 @@ dotnet run
 ```
 
 Then open the local URL shown in the terminal.
+
+## Submission Notes
+
+If submitting this project as a `.zip` file, include at least:
+
+- the full project source
+- [README.md](README.md)
+- [sql/schema.sql](sql/schema.sql)
+
+The person running the project will still need:
+
+- a compatible .NET SDK installed locally
+- a local MySQL server
+- their own MySQL credentials configured in `appsettings.json`
+
+This project does not require sharing your personal database password.
 
 ## Testing
 
@@ -212,16 +238,3 @@ From the project root:
 ```bash
 dotnet test
 ```
-
-## Notes
-
-- This project uses scaffolded EF Core entities and MVC controllers as a base.
-- Some business logic is implemented directly in model classes, while creation and workflow orchestration remain in controllers.
-- Delete behavior mainly relies on EF Core and database cascade rules.
-- `MinimumBalance` is stored for savings accounts but is not yet part of the withdrawal rule.
-
-## Known Limitations
-
-- ID generation is controller-based rather than domain/service-based
-- Delete behavior is database-driven rather than wrapped in dedicated business methods
-- `MinimumBalance` is not yet enforced during savings withdrawals
